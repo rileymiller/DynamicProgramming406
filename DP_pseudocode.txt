@@ -1,0 +1,38 @@
+Inventory (g_i, L, P, c, n){
+	cost [n][L] = {inf}
+	gallons[n][L] = {-1}
+	cost[0][0] = 0
+	
+	for (i = 1; i <= L; i++)
+		cost[0][i] = inf;
+		
+	for (k =1; k <= n; k++)
+		
+		for(j = 0; j <= L; j++)
+			lower = max(0, j+g_i-L)
+			upper = j+g_i 
+			
+			for (m = lower; m <= upper; m++)
+				temp_cost = c*(j+g[i]-m)+c*m+cost[k-1][j+g[i]-L]
+				if(m >0) temp_cost += P
+				
+				if (temp_cost < cost[k][j])
+					cost[k][L] = temp_cost
+					gallons [k][j] = m
+						
+	
+	return cost, gallons
+
+	Get_Report(n, gallons, cost, g_i)
+		prev_gallons = 0
+		tot_cost = 0
+		order_days[n] = {0}
+		
+		for(i = n; i >= i; i--)
+			if(gallons[i][prev_gallons] > 0)
+				tot_cost = cost[n][prev_gallons]
+				order_days[i] = gallons[i][prev_gallons]
+		
+		prev_gallons += g[i] - order_days[i]
+		
+	return order_days, total_cost
