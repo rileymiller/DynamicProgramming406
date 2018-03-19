@@ -13,7 +13,7 @@ Inventory (g_i, L, P, c, n){
 			upper = j+g_i 
 			
 			for (m = lower; m <= upper; m++)
-				temp_cost = c*(j+g[i]-m)+c*m+cost[k-1][j+g[i]-L]
+				temp_cost = c*(j+g[k]-m)+c*m+cost[k-1][j+g[k]-L]
 				if(m >0) temp_cost += P
 				
 				if (temp_cost < cost[k][j])
