@@ -7,72 +7,31 @@
 
 using namespace std;
 
-
-/*
-Inventory (g_i, L, P, c, n){
-cost [n][L] = {inf}
-gallons[n][L] = {-1}
-cost[0][0] = 0
-
-for (i = 1; i <= L; i++)
-cost[0][i] = inf;
-
-for (k =1; k <= n; k++)
-
-for(j = 0; j <= L; j++)
-lower = max(0, j+g_i-L)
-upper = j+g_i
-
-for (m = lower; m <= upper; m++)
-temp_cost = c*(j+g[i]-m)+c*m+cost[k-1][j+g[i]-L]
-if(m >0) temp_cost += P
-
-if (temp_cost < cost[k][j])
-cost[k][L] = temp_cost
-gallons [k][j] = m
-
-
-return cost, gallons
-
-Get_Report(n, gallons, cost, g_i)
-prev_gallons = 0
-tot_cost = 0
-order_days[n] = {0}
-
-for(i = n; i >= i; i--)
-if(gallons[i][prev_gallons] > 0)
-tot_cost = cost[n][prev_gallons]
-order_days[i] = gallons[i][prev_gallons]
-
-prev_gallons += g[i] - order_days[i]
-
-return order_days, total_cost
-*/
-
-
-//need to clear up discrepancies with g_i and what loop it is predecated off of.
-void Inventory(vector<int> g_i, int L, int P, int c, int n, int** cost, int** gallons) {
-    cost[n][L] = INFINITY;
-    gallons[n][L] = -1;
-
-    cost[0][0] = 0;
-
-    for (int i = 1; i <= L; i++)
-        cost[0][i] = INFINITY;
+void Inventory(vector<int> g_i, int L, int P, int c, int n, vector<vector<int>> &cost, vector<vector<int>> &gallons) {
+	for (int i = 0; i <= n; i++) {
+		vector<int> tempVec;
+		vector<int> tempVecTwo;
+		for (int j = 0; j <= L; j++) {
+			tempVec.push_back(999999);//initialize costs to infinity
+			tempVecTwo.push_back(-1);//initialize order sizes to -1
+		}
+		gallons.push_back(tempVecTwo);
+		cost.push_back(tempVec);
+	}
+	cost[0][0] = 0;
     
     int lower, upper, temp_cost;
     for (int k = 1; k <= n; k++) {
 
         for (int j = 0; j <= L; j++) {
-            lower = max(0, j + g_i[k] - L);//line needs to be checked
-            upper = j + g_i[k];
+            lower = max(0, j + g_i[k] - L);//least amount that needs to be ordered
+            upper = j + g_i[k];//the most that can be ordered
 
             for (int m = lower; m <= upper; m++) {
-                temp_cost = c*(j + g_i[k] - m) + c*m + cost[k - 1][j + g_i[k] - L];
-                if (m > 0) temp_cost += P;
-
+                temp_cost = c*(j + g_i[k] - m) + cost[k - 1][j + g_i[k] - m];//cost which is the prev day holding cost + prev day cumulative cost
+                if (m > 0) temp_cost += P; //add delivery cost if applicable
                     if (temp_cost < cost[k][j]) {
-                        cost[k][L] = temp_cost;
+                        cost[k][j] = temp_cost;
                         gallons[k][j] = m;
                     }
             }
@@ -81,18 +40,35 @@ void Inventory(vector<int> g_i, int L, int P, int c, int n, int** cost, int** ga
 
 }
 //get report function
-void Get_Report(int n, int** cost, int** gallons, vector<int> g_i, int &tot_cost, int order_days[]) {
+void Get_Report(int n, vector<vector<int>> &cost, vector<vector<int>> &gallons, vector<int> g_i, int &tot_cost, vector<int> &order_days, ofstream &fout ) {
         int prev_gallons = 0;
         tot_cost = 0;
-        order_days[n] = { 0 };
 
-        for (int i = n; i >= i; i--) {
+        for (int i = n; i >= 1; i--) {
             if (gallons[i][prev_gallons] > 0) {
-                tot_cost = cost[n][prev_gallons];
-                order_days[i] = gallons[i][prev_gallons];
+				if (i == n) {
+					tot_cost = cost[n][prev_gallons];//total cost is accumulated in the last day
+				}
+				order_days[i] = gallons[i][prev_gallons];
             }
             prev_gallons += g_i[i] - order_days[i];
         }
+		int numDays = 0;
+		for (int i = 0; i <= n; i++) {
+			if (order_days[i] > 0) {
+				numDays++;
+			}
+		}
+		fout << tot_cost << endl;
+		fout << numDays << endl;
+		//print out the days and gallons ordered
+		for (int i = 1; i <= n; i++) {
+			if (order_days[i] > 0) {
+				fout << i << " " << order_days[i] << endl;
+			}
+		}
+
+
 }
 
 int main() {
@@ -109,32 +85,25 @@ int main() {
     
     vector<int> g_i;
     int temp;
+	g_i.push_back(0);
     while (!fin.eof()) {
         fin >> temp;
         g_i.push_back(temp);
             
     }
-    
-   // int cost[][] = new int[n][L];
-    
-    //initializing cost[][]
-    int** cost = new int*[n];
-    for (int i = 0; i < n; ++i)
-        cost[i] = new int[L];
-    
-    //initializing gallons[][]
-    int** gallons = new int*[n];
-    for (int i = 0; i < n; ++i)
-        gallons[i] = new int[L];
+	
+    vector<vector<int>> cost;
 
-    int* order_days = new int[n];
+	vector<vector<int>> gallons;
+
+	vector<int> order_days;
+	for (int i = 0; i <= n; i++) {
+		order_days.push_back(0);
+	}
     int tot_cost = 0;
-
+	ofstream fout("output.txt");
     Inventory(g_i, L, P, c, n, cost, gallons);
-    Get_Report(n, cost, gallons, g_i, tot_cost, order_days);
-
-    ofstream fout("output.txt");
-       
+    Get_Report(n, cost, gallons, g_i, tot_cost, order_days, fout);
 
     cout << "Hello world" << endl;
     return 0;
