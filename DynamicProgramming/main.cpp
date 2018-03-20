@@ -51,7 +51,7 @@ return order_days, total_cost
 
 
 //need to clear up discrepancies with g_i and what loop it is predecated off of.
-void Inventory(int g_i[], int L, int P, int c, int n, int** cost, int** gallons) {
+void Inventory(vector<int> g_i, int L, int P, int c, int n, int** cost, int** gallons) {
     cost[n][L] = INFINITY;
     gallons[n][L] = -1;
 
@@ -81,8 +81,18 @@ void Inventory(int g_i[], int L, int P, int c, int n, int** cost, int** gallons)
 
 }
 //get report function
-void Get_Report() {
+void Get_Report(int n, int** cost, int** gallons, vector<int> g_i, int &tot_cost, int order_days[]) {
+        int prev_gallons = 0;
+        tot_cost = 0;
+        order_days[n] = { 0 };
 
+        for (int i = n; i >= i; i--) {
+            if (gallons[i][prev_gallons] > 0) {
+                tot_cost = cost[n][prev_gallons];
+                order_days[i] = gallons[i][prev_gallons];
+            }
+            prev_gallons += g_i[i] - order_days[i];
+        }
 }
 
 int main() {
@@ -117,6 +127,14 @@ int main() {
     for (int i = 0; i < n; ++i)
         gallons[i] = new int[L];
 
+    int* order_days = new int[n];
+    int tot_cost = 0;
+
+    Inventory(g_i, L, P, c, n, cost, gallons);
+    Get_Report(n, cost, gallons, g_i, tot_cost, order_days);
+
+    ofstream fout("output.txt");
+       
 
     cout << "Hello world" << endl;
     return 0;
